@@ -29,6 +29,9 @@ const BookSchema = mongoose.Schema(
       type: String,
       required: [true, 'Please Enter you location'],
     },
+    image: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
   },
   {
     timestamps: true,

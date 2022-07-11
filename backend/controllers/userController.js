@@ -1,4 +1,3 @@
-const multer = require('multer');
 const Users = require('../models/usermodel');
 const catchAsync = require('../utils/catchAsync');
 
