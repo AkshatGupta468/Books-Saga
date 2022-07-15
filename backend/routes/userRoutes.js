@@ -13,11 +13,13 @@ userRouter.patch('/resetPassword/:token', authController.resetPassword);
 userRouter.use(authController.protect);
 userRouter.patch('/updatePassword', authController.updatePassword);
 
-userRouter.patch('/Details', userController.updateMe);
+userRouter
+  .route('/Details')
+  .get(userController.getDetails)
+  .patch(userController.updateMe);
 
 userRouter
   .route('/')
   .get(authController.restrictTo('admin'), userController.getAllUsers);
-
 
 module.exports = userRouter;

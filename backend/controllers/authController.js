@@ -18,6 +18,7 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 exports.signup = catchAsync(async (req, res, next) => {
+  console.log(req.body);
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -29,10 +30,27 @@ exports.signup = catchAsync(async (req, res, next) => {
 
 exports.login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
-
+  console.log(email, password);
   // 1) Check if email and passwords exists
-  if (!email || !password) {
-    return next(new AppError('Both Username and Password is Required', 400));
+  if (!email) {
+    return next(
+      new AppError('Both Email and Password are Required', 400, {
+        email: {
+          name: 'REQ_EMAIL',
+          message: 'Email is Required',
+        },
+      })
+    );
+  }
+  if (!password) {
+    return next(
+      new AppError('Both Email and Password are Required', 400, {
+        password: {
+          name: 'REQ_PASSWORD',
+          message: 'Password is Required',
+        },
+      })
+    );
   }
   // 2) Check if the user exists and password is correct
   const user = await User.findOne({
@@ -40,7 +58,18 @@ exports.login = catchAsync(async (req, res, next) => {
   }).select('+password');
   //select for password is disables which has to be enabled here
   if (!user || !(await user.correctPassword(password, user.password))) {
-    return next(new AppError('Incorrect email or password', 401));
+    return next(
+      new AppError('Incorrect email or password', 401, {
+        email: {
+          name: 'INVALID_EMAIL_PASSWORD',
+          message: 'Incorrect email or password',
+        },
+        password: {
+          name: 'INVALID_EMAIL_PASSWORD',
+          message: 'Incorrect email or password',
+        },
+      })
+    );
   }
   // 3) if everything ok, send the token to client
   createSendToken(user, 200, res);
@@ -58,7 +87,12 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   if (!token)
     return next(
-      new AppError('You are not logged in! Please log in to get access', 401)
+      new AppError('You are not logged in! Please log in to get access', 401, {
+        misc: {
+          name: 'NOT_LOGGED_IN',
+          message: 'Your are not logged in!',
+        },
+      })
     );
   // 2) Verification token
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -67,13 +101,27 @@ exports.protect = catchAsync(async (req, res, next) => {
   const freshUser = await User.findById(decoded.id);
   if (!freshUser)
     return next(
-      new AppError('The user belonging to the token no longer exists', 401)
+      new AppError('The user belonging to the token no longer exists', 401, {
+        misc: {
+          name: 'USER_DELETED',
+          message: 'The user belonging to the token no longer exists',
+        },
+      })
     );
 
   // 4) Check if user changed password after the token was issued
   if (freshUser.changedPasswordAfter(decoded.iat))
     return next(
-      new AppError('User recentrly changed password! Please log in again.', 401)
+      new AppError(
+        'User recently changed password! Please log in again.',
+        401,
+        {
+          misc: {
+            name: 'USER_PASSWORD_CHANGED',
+            message: 'User recently changed password! Please log in again.',
+          },
+        }
+      )
     );
   // 5) Check if the Book owner is the user
   // GRANT ACCESS TO PROTECTED ROUTE
@@ -81,14 +129,17 @@ exports.protect = catchAsync(async (req, res, next) => {
   next();
 });
 
-
-
 exports.restrictTo =
   (...roles) =>
   (req, res, next) => {
     if (!roles.includes(req.user.role))
       return next(
-        new AppError('You do not have permission to perform this action', 403)
+        new AppError('You do not have permission to perform this action', 403, {
+          misc: {
+            name: 'UNAUTHORIZED',
+            message: 'You do not have permission to perform this action',
+          },
+        })
       );
     next();
   };
@@ -97,17 +148,22 @@ exports.forgorPassword = catchAsync(async (req, res, next) => {
   // 1 Get user based on POSTED email
   const user = await User.findOne({ email: req.body.email });
   if (!user)
-    return next(new AppError('There is no user with that email address', 404));
+    return next(
+      new AppError('There is no user with that email address', 404, {
+        email: {
+          name: 'INVALID_EMAIL',
+          message: 'There is no user with that email address',
+        },
+      })
+    );
   // 2) Generate the random reset token
   const resetToken = user.createPasswordResetToken();
   await user.save();
   // { validateBeforeSave: false }
 
   // 3)Sent it to user's email
-  const resetURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/resetPassword/${resetToken}`;
-  const message = `Forgot your password? submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  const resetURL = `${req.body.resetURL}/${resetToken}`;
+  const message = `Forgot your password? Go to given URL :  ${resetURL}\nThis URL is only valid for 10 minutes. If you didn't forget your password, please ignore this email!`;
   try {
     await sendEmail({
       email: user.email,
@@ -132,6 +188,7 @@ exports.forgorPassword = catchAsync(async (req, res, next) => {
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
+  console.log(req.body, req.params);
   // 1) Get user based on the token
   const hashedToken = crypto
     .createHash('sha256')
@@ -144,7 +201,15 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   });
 
   // 2) If token has not expired and there is user, set the new password
-  if (!user) return next(new AppError('Token is invalid or has expired', 400));
+  if (!user)
+    return next(
+      new AppError('Token is invalid or has expired', 400, {
+        misc: {
+          name: 'INVALID_TOKEN',
+          message: 'Token is invalid or has expired',
+        },
+      })
+    );
   user.password = req.body.password;
   user.passwordConfirm = req.body.passwordConfirm;
   user.passwordResetToken = undefined;
@@ -161,7 +226,14 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   const user = await User.findById(req.user._id).select('+password');
   // 2) Check if the POSTed password is correct
   if (!(await user.correctPassword(req.body.oldPassword, user.password)))
-    return next(new AppError('The Old password entered is incorrect', 403));
+    return next(
+      new AppError('The Old password entered is incorrect', 403, {
+        password: {
+          name: 'INVALID_PASSWORD',
+          message: 'The Old password entered is incorrect',
+        },
+      })
+    );
   // 3) if so, update password
   user.password = req.body.newPassword;
   user.passwordConfirm = req.body.newPasswordConfirm;

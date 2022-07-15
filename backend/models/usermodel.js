@@ -7,14 +7,14 @@ const catchAsync = require('../utils/catchAsync');
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'The Name is a required field'],
+    required: [true, 'Name is Required!'],
   },
   email: {
     type: String,
-    required: [true, 'The Email is a require field'],
+    required: [true, 'Email is Required!'],
     unique: true,
     lowercase: true,
-    validate: [validator.isEmail, 'Please Provide a Valid Email'],
+    validate: [validator.isEmail, 'Invalid Email!'],
   },
   role: {
     type: String,
@@ -23,8 +23,8 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'The Password is a required field'],
-    minlength: [8, 'The length of password should be atleast 8'],
+    required: [true, 'Password is Required!'],
+    minlength: [8, 'Password too Short! Use 8 Characters Atleast'],
     select: false,
   },
   passwordConfirm: {
