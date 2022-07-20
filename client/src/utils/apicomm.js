@@ -7,7 +7,6 @@ export const books = axios.create({
 export const setAuthToken = (token) => {
   if (token) {
     books.defaults.headers.common.Authorization = `Bearer ${token}`;
-    console.log(books.defaults.headers);
   } else delete books.defaults.headers.common.Authorization;
 };
 export const loginRequest = (data) =>
@@ -115,6 +114,83 @@ export const getUserRequest = () => {
       .then((response) => {
         console.log(response.data);
         resolve(response.data.data.user);
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err.response.data.errors);
+      });
+  });
+};
+
+export const getBooksRequest = () => {
+  return new Promise((resolve, reject) => {
+    console.log('getBooksRequest');
+    books
+      .get(`/books`)
+      .then((response) => {
+        console.log(response.data);
+        resolve(response.data.data.books);
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err.response.data.errors);
+      });
+  });
+};
+export const getMyBooksRequest = () => {
+  return new Promise((resolve, reject) => {
+    console.log('getMyBooksRequest');
+    books
+      .get(`/books/getMyBooks`)
+      .then((response) => {
+        console.log(response.data);
+        resolve(response.data.data.books);
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err.response.data.errors);
+      });
+  });
+};
+export const addBookRequest = (bookFormData) => {
+  return new Promise((resolve, reject) => {
+    console.log('addBookRequest');
+    books
+      .post(`/books`, bookFormData)
+      .then((response) => {
+        console.log(response.data);
+        resolve(response.data.data.books);
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err.response.data.errors);
+      });
+  });
+};
+
+export const getBookDetailRequest = (bookid) => {
+  return new Promise((resolve, reject) => {
+    console.log('getBookDetail');
+    books
+      .get(`/books/${bookid}`)
+      .then((response) => {
+        console.log(response.data);
+        resolve(response.data.data.book);
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err.response.data.errors);
+      });
+  });
+};
+export const deleteBookRequest = (bookid) => {
+  return new Promise((resolve, reject) => {
+    console.log('delete Book');
+    books
+      .delete(`/books/${bookid}`)
+      .then((response) => {
+        console.log(response.data);
+        resolve(response.data.data);
       })
       .catch((err) => {
         console.log(err);

@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 
 process.on('uncaughtException', (err) => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
-  console.log(err)
+  console.log(err);
   console.log(err.name, err.message);
   process.exit(1);
 });
@@ -14,9 +14,14 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
-mongoose.connect(DB).then(() => {
-  console.log('Connection to Database is successful');
-});
+mongoose
+  .connect(DB)
+  .then(() => {
+    console.log('Connection to Database is successful');
+  })
+  .catch((err) => {
+    console.log('Unable to Connect to Database', err);
+  });
 
 const app = require('./app');
 

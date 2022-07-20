@@ -1,26 +1,14 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { IconButton, InputAdornment, Link } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useState } from 'react';
 import { signupRequest } from '../utils/apicomm';
-import { Copyright } from './copyright';
 import EnterForm from './enterform';
 
-const theme = createTheme();
 const defaultFormState = {
   password: {
     error: false,
@@ -61,7 +49,7 @@ const Signup = () => {
 
     signupRequest(data)
       .then((res) => {
-        navigate('/');
+        navigate('/Buy');
       })
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {

@@ -1,25 +1,19 @@
-import {
-  AppBar,
-  Button,
-  IconButton,
-  SvgIcon,
-  Toolbar,
-  Typography,
-} from '@mui/material';
-import logo from '../logo.png';
-import React, { useEffect } from 'react';
-const Navbar = ({ toggleLoginout, user }) => {
-  useEffect(() => {
-    console.log(user);
-  });
+import { AppBar, Button, CardMedia, Toolbar, Typography } from '@mui/material';
+import logo from '../logo.jpg';
+import React, { useContext, useEffect } from 'react';
+import { UserContext } from '../App';
+
+const Navbar = ({ toggleLoginout }) => {
+  const [user, setUser] = useContext(UserContext);
   return (
     <AppBar>
       <Toolbar>
-        <img
+        <CardMedia
+          component="img"
           src={logo}
           alt="logo"
           style={{ maxWidth: '2.2rem', position: 'fixed', left: '10px' }}
-        ></img>
+        ></CardMedia>
         <Typography variant="h6" component="div" sx={{ margin: 'auto' }}>
           Books Saga
         </Typography>

@@ -8,6 +8,7 @@ const bookRouter = express.Router();
 
 bookRouter.use(authController.protect);
 
+bookRouter.route('/getMyBooks').get(bookController.getMyBooks);
 bookRouter
   .route('/:id')
   .get(bookController.getBook)
@@ -16,6 +17,5 @@ bookRouter
 bookRouter
   .route('/')
   .get(bookController.getAllBooks)
-  .post(bookController.addBook);
-
+  .post(bookController.uploadBookImage, bookController.addBook);
 module.exports = bookRouter;

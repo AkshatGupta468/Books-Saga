@@ -31,11 +31,19 @@ const multerFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image')) {
     cb(null, true);
   } else {
-    cb(new AppError('Not an image please only images', 404), false);
+    cb(
+      new AppError(404, {
+        image: {
+          name: 'INVALID_IMAGE',
+          message: 'Not an image please only images',
+        },
+      }),
+      false
+    );
   }
 };
 const multerLimits = {
-  fileSize: 512000,
+  fileSize: 1024 * 1024 * 10,
 };
 const upload = multer({
   storage: storage,
@@ -50,13 +58,23 @@ exports.getAllBooks = catchAsync(async (req, res, next) => {
     .limitFields()
     .paginate();
   const books = await features.queryObj;
-
+  let tbooks = books;
+  tbooks = await Promise.all(
+    tbooks.map(async (book) => {
+      if (book.image) {
+        const image = await getBookImage(book.image);
+        let tbook = { ...book._doc };
+        tbook.image = image;
+        return tbook;
+      } else return book;
+    })
+  );
   //SEND RESPONSE
   res.status(200).json({
     status: 'success',
-    results: books.length,
+    results: tbooks.length,
     data: {
-      books,
+      books: tbooks,
     },
   });
 });
@@ -64,20 +82,57 @@ exports.getAllBooks = catchAsync(async (req, res, next) => {
 exports.getBook = catchAsync(async (req, res, next) => {
   const book = await BookModel.findById(req.params.id);
   if (!book) {
-    return next(new AppError('No book found with that ID', 404));
+    return next(
+      new AppError(404, {
+        misc: {
+          name: 'BOOK_NOT_FOUND',
+          message: 'No book found with that ID',
+        },
+      })
+    );
+  }
+  let bookDetails = book;
+  if (book.image) {
+    const image = await getBookImage(book.image);
+    bookDetails = { ...book._doc };
+    bookDetails.image = image;
   }
   const imageBuf = await getBookImage(book.image);
-  console.log('here2');
   res.status(200).json({
     status: 'success',
     data: {
-      book,
+      book: bookDetails,
     },
-    imageBuf,
+  });
+});
+
+exports.getMyBooks = catchAsync(async (req, res, next) => {
+  console.log(req.user);
+  console.log('from get my book');
+  const books = await BookModel.find({ owner: req.user._id });
+  let tbooks = books;
+  tbooks = await Promise.all(
+    tbooks.map(async (book) => {
+      if (book.image) {
+        const image = await getBookImage(book.image);
+        let tbook = { ...book._doc };
+        tbook.image = image;
+        return tbook;
+      } else return book;
+    })
+  );
+  //SEND RESPONSE
+  res.status(200).json({
+    status: 'success',
+    results: tbooks.length,
+    data: {
+      books: tbooks,
+    },
   });
 });
 
 exports.addBook = catchAsync(async (req, res, next) => {
+  if (req.file) req.body.image = req.file.id;
   req.body.owner = req.user._id;
   const book = await BookModel.create(req.body);
   res.status(201).json({
@@ -104,7 +159,14 @@ exports.editBook = catchAsync(async (req, res, next) => {
   // });
 
   if (!book) {
-    return next(new AppError('No book found with that ID for this user', 404));
+    return next(
+      new AppError(404, {
+        misc: {
+          name: 'BOOK_NOT_FOUND',
+          message: 'No book found with that ID for this user',
+        },
+      })
+    );
   }
 
   res.status(200).json({
@@ -137,7 +199,9 @@ const getBookImage = catchAsync(async (fileId) => {
     chunkSizeBytes: 1024,
     bucketName: 'uploads',
   });
-  const BufferImage = await stream2buffer(gridfsbucket.openDownloadStream(fileId));
+  const BufferImage = await stream2buffer(
+    gridfsbucket.openDownloadStream(fileId)
+  );
   return BufferImage.toString('base64');
 });
 

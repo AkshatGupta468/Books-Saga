@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import TextField from '@mui/material/TextField';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import { IconButton, InputAdornment, Link } from '@mui/material';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Visibility from '@mui/icons-material/Visibility';
-import { loginRequest } from '../utils/apicomm';
-import EnterForm from './enterform';
-
+import { getUserRequest, loginRequest, setAuthToken } from '../utils/apicomm';
+import EnterForm from '../components/enterform';
+import { UserContext } from '../App';
 const defaultFormState = {
   email: {
     error: false,
@@ -22,6 +22,30 @@ const defaultFormState = {
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formState, setFormState] = useState(defaultFormState);
+  const [user, setUser] = useContext(UserContext);
+  const navigate = useNavigate();
+
+  const checkLoggedIn = () => {
+    getUserRequest()
+      .then((user) => {
+        console.log('Already Logged In');
+        console.log(user);
+        setUser(user);
+        navigate('/Buy');
+        // setloading(false);
+      })
+      .catch((err) => {
+        console.log('Not logged in');
+        // setloading(false);
+      });
+  };
+  useEffect(() => {
+    setAuthToken(
+      window.sessionStorage.getItem('token') ||
+        window.localStorage.getItem('token')
+    );
+    checkLoggedIn();
+  }, []);
   const changeHandler = (key) => {
     setFormState((prev) => {
       const newstate = {
@@ -32,13 +56,13 @@ const Login = () => {
       return newstate;
     });
   };
-  const navigate = useNavigate();
   const handleSubmit = (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     loginRequest(data)
       .then(() => {
-        navigate('/');
+        checkLoggedIn();
+        navigate('/Buy');
       })
       .catch((errors) => {
         Object.keys(errors).forEach((key) => {
@@ -53,7 +77,6 @@ const Login = () => {
         });
       });
   };
-
   return (
     <EnterForm
       handleSubmit={handleSubmit}

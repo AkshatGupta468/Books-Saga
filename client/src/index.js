@@ -9,28 +9,17 @@ import ResetPassword from './components/resetpassword';
 import Signup from './components/signup';
 import { ThemeProvider } from '@mui/material/styles';
 import { theme } from './utils/theme';
-import { Container } from '@mui/material';
 import { Box } from '@mui/material';
+import { Welcome } from './components/welcome';
+import { Buy } from './components/buy';
+import AppRoutes from './routes';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>
         <Box sx={{ height: '100vh' }}>
-          <Routes>
-            <Route path="/log-in" element={<Login />} />
-            <Route path="/sign-up" element={<Signup />} />
-            <Route path="/forgot-password" element={<Forgotpassword />} />
-            <Route
-              path="/resetPassword/:resetToken"
-              element={<ResetPassword />}
-            />
-            <Route path="" element={<App />} />
-            <Route
-              path="*"
-              element={<App messageHeading="404" messagePara="NOT FOUND" />}
-            />
-          </Routes>
+          <AppRoutes />
         </Box>
       </ThemeProvider>
     </BrowserRouter>

@@ -2,13 +2,10 @@ const AppError = require('../utils/appError');
 
 const handleCastErrorDB = (err) => {
   const message = `Invalid ${err.path}: ${err.value}.`;
-  return new AppError(message, 400);
+  return new AppError(400, err);
 };
 
 const handleDuplicateFieldsDB = (err) => {
-  const value = Object.keys(err.keyValue)
-    .map((key) => `${key}:${err.keyValue[key]}`)
-    .join(', ');
   let errors = {};
   Object.keys(err.keyValue).forEach((key) => {
     errors[key] = {
@@ -16,28 +13,34 @@ const handleDuplicateFieldsDB = (err) => {
       message: 'Already in use!',
     };
   });
-  const message = `Duplicate field value in ${value}. Please use another value!`;
-  return new AppError(message, 400, errors);
+  return new AppError(400, errors);
 };
 const handleValidationErrorDB = (err) => {
   console.log(err);
-  const msg = Object.values(err.errors).map((el) => el.message);
 
-  const message = `Invalid input data. ${msg.join('. ')}`;
-  return new AppError(message, 400, err.errors);
+  return new AppError(400, err.errors);
 };
 
 const handleJWTError = () =>
-  new AppError('Invalid token. Please log in again', 401);
+  new AppError(401, {
+    misc: {
+      name: 'INVALID_TOKEN',
+      message: 'Invalid token. Please log in again',
+    },
+  });
 
 const handleJWTExpiredError = () =>
-  new AppError('Your Token has Expired. Please Log in again', 401);
+  new AppError(401, {
+    misc: {
+      name: 'TOKEN_EXPIRED',
+      message: 'Your Token has Expired. Please Log in again',
+    },
+  });
 
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
     errors: err.errors,
-    message: err.message,
     stack: err.stack,
   });
 };
@@ -46,7 +49,6 @@ const sendErrorProd = (err, res) => {
   if (err.isOperational) {
     res.status(err.statusCode).json({
       status: err.status,
-      message: err.message,
       errors: err.errors,
     });
   } else {
@@ -56,7 +58,12 @@ const sendErrorProd = (err, res) => {
     //2) Send generic message
     res.status(500).json({
       status: 'error',
-      message: 'Something went very wrong!',
+      errors: {
+        misc: {
+          name: 'INTERNAL_SERVER_ERROR',
+          message: 'Something went very wrong!',
+        },
+      },
     });
   }
 };
@@ -66,6 +73,7 @@ module.exports = (err, req, res, next) => {
   err.status = err.status || 'error';
   //500 stands for internal server error
   let error = JSON.parse(JSON.stringify(err));
+  console.log(error);
   error.message = err.message;
   error.name = err.name;
   if (error.name === 'CastError') error = handleCastErrorDB(error);

@@ -29,6 +29,7 @@ exports.getDetails = catchAsync(async (req, res) => {
         name: req.user.name,
         email: req.user.email,
         role: req.user.role,
+        _id: req.user._id,
       },
     },
   });

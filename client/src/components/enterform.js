@@ -34,73 +34,66 @@ const EnterForm = ({
   footlinks,
 }) => {
   return (
-    <ThemeProvider theme={theme}>
-      <Container
-        component="main"
-        maxWidth="xs"
+    <Container
+      maxWidth="xs"
+      sx={{
+        pt: 8,
+        pl: 4,
+        pr: 4,
+      }}
+    >
+      <CssBaseline />
+      <Box
         sx={{
-          pt: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
-        <CssBaseline />
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <Typography component="h1" variant="h5">
-            {pagename}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            noValidate
-            sx={{ mt: 1 }}
+        <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component="h1" variant="h5">
+          {pagename}
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          {children}
+          {['Sign Up', 'Log In'].includes(pagename) && (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  color="primary"
+                  id="rememberMe"
+                  name="rememberMe"
+                  defaultChecked
+                />
+              }
+              label="Remember me"
+            />
+          )}
+          <Button
+            type="submit"
+            fullWidth
+            disabled={isLoading}
+            variant="contained"
+            sx={{ mt: 3, mb: 2, position: 'relative' }}
           >
-            {children}
-            {['Sign Up', 'Log In'].includes(pagename) && (
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    color="primary"
-                    id="rememberMe"
-                    name="rememberMe"
-                    defaultChecked
-                  />
-                }
-                label="Remember me"
+            {buttonname}
+            {isLoading && (
+              <CircularProgress
+                size={24}
+                sx={{
+                  // color: green[500],
+                  position: 'absolute',
+                  margin: 'auto',
+                }}
               />
             )}
-            <Button
-              type="submit"
-              fullWidth
-              disabled={isLoading}
-              variant="contained"
-              sx={{ mt: 3, mb: 2, position: 'relative' }}
-            >
-              {buttonname}
-              {isLoading && (
-                <CircularProgress
-                  size={24}
-                  sx={{
-                    // color: green[500],
-                    position: 'absolute',
-                    margin: 'auto',
-                  }}
-                />
-              )}
-            </Button>
-          </Box>
-          {footlinks}
+          </Button>
         </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
-      </Container>
-    </ThemeProvider>
+        {footlinks}
+      </Box>
+    </Container>
   );
 };
 
