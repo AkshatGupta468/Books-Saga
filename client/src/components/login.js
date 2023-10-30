@@ -65,16 +65,18 @@ const Login = () => {
         navigate('/Buy');
       })
       .catch((errors) => {
-        Object.keys(errors).forEach((key) => {
-          setFormState((oldState) => {
-            const newState = {
-              ...oldState,
-            };
-            newState[key].error = true;
-            newState[key].helpertext = errors[key].message;
-            return newState;
+        if (errors) {
+          Object.keys(errors).forEach((key) => {
+            setFormState((oldState) => {
+              const newState = {
+                ...oldState,
+              };
+              newState[key].error = true;
+              newState[key].helpertext = errors[key].message;
+              return newState;
+            });
           });
-        });
+        }
       });
   };
   return (

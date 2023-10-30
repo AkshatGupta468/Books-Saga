@@ -75,10 +75,12 @@ function App() {
           setUser(user);
         })
         .catch((errors) => {
-          if (errors.misc && errors.misc.name === 'NOT_LOGGED_IN') {
-            delete errors.misc;
+          if (errors) {
+            if (errors.misc && errors.misc.name === 'NOT_LOGGED_IN') {
+              delete errors.misc;
+            }
+            ErrorHandler(errors, navigate);
           }
-          ErrorHandler(errors, navigate);
         });
     }
     setloading(false);
