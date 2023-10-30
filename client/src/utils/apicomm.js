@@ -66,7 +66,7 @@ export const signupRequest = (data) =>
   });
 export const forgorPasswordRequest = (body) => {
   return new Promise((resolve, reject) => {
-    body.resetURL = `${window.location.origin}/resetPassword`;
+    body.resetURL = `${window.location.origin}/#/resetPassword`;
     books
       .post(`users/forgotPassword`, body)
       .then((response) => {
