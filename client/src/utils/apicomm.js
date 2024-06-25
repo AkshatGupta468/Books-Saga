@@ -122,14 +122,19 @@ export const getUserRequest = () => {
   });
 };
 
-export const getBooksRequest = () => {
+export const getBooksRequest = (tags) => {
   return new Promise((resolve, reject) => {
-    console.log('getBooksRequest');
+    // console.log('getBooksRequest');
+    let queryStr = '';
+    if (tags && tags.length) {
+      queryStr = '?' + tags.map((elem) => 'tags[]=' + elem).join('&');
+    }
+    console.log(queryStr);
     books
-      .get(`/books`)
+      .get('/books' + queryStr)
       .then((response) => {
         console.log(response.data);
-        resolve(response.data.data.books);
+        resolve(response.data.data);
       })
       .catch((err) => {
         console.log(err);

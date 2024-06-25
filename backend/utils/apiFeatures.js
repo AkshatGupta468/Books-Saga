@@ -52,6 +52,11 @@ class APIFeatures {
     this.queryObj.skip(skip).limit(limit);
     return this;
   }
+
+  // 5) Search by tags
+  Searchbytags() {
+    this.queryObj.all('tags');
+  }
 }
 
 module.exports = APIFeatures;

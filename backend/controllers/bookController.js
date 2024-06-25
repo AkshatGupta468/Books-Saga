@@ -52,6 +52,7 @@ const upload = multer({
 });
 
 exports.getAllBooks = catchAsync(async (req, res, next) => {
+  console.log(req.query);
   const features = new APIFeatures(BookModel.find(), req.query)
     .filter()
     .sorting()
@@ -59,6 +60,7 @@ exports.getAllBooks = catchAsync(async (req, res, next) => {
     .paginate();
   const books = await features.queryObj;
   let tbooks = books;
+
   tbooks = await Promise.all(
     tbooks.map(async (book) => {
       if (book.image) {
@@ -75,6 +77,7 @@ exports.getAllBooks = catchAsync(async (req, res, next) => {
     results: tbooks.length,
     data: {
       books: tbooks,
+      schema: JSON.parse(JSON.stringify(BookModel.schema.obj)),
     },
   });
 });
